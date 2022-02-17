@@ -5,10 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"developer.zopsmart.com/go/gofr/pkg/errors"
-
 	"developer.zopsmart.com/go/gofr/pkg/datastore"
-
+	"developer.zopsmart.com/go/gofr/pkg/errors"
 	"developer.zopsmart.com/go/gofr/pkg/gofr"
 	"github.com/DATA-DOG/go-sqlmock"
 

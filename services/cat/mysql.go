@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"developer.zopsmart.com/go/gofr/pkg/errors"
-
 	"developer.zopsmart.com/go/gofr/pkg/gofr"
 
 	"mysql-api/models"
