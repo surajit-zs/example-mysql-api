@@ -2,6 +2,7 @@ package cat
 
 import (
 	"context"
+	"database/sql"
 	"reflect"
 	"testing"
 
@@ -49,6 +50,157 @@ func TestCatStore_Create(t *testing.T) {
 	for i, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
 			_, err := store.Create(ctx, tc.input)
+			if !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.err, err)
+			}
+		})
+	}
+}
+
+func TestCatStore_GetByID(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+
+	if err != nil {
+		t.Fatalf("database error :%s", err)
+	}
+
+	cat1 := models.Cat{
+		ID:   "1",
+		Name: "test_name",
+		Age:  1,
+	}
+
+	query := "select * from cat where id=$1"
+	tests := []struct {
+		desc string
+		id   string
+		mock []interface{}
+		res  models.Cat
+		err  error
+	}{
+		{"success", cat1.ID,
+			[]interface{}{mock.ExpectQuery(query).WithArgs(cat1.ID).
+				WillReturnRows(sqlmock.NewRows([]string{"id", "name", "age"}).
+					AddRow(cat1.ID, cat1.Name, cat1.Age))}, cat1, nil},
+
+		{"error", cat1.ID, []interface{}{mock.ExpectQuery(query).WithArgs(cat1.ID).
+			WillReturnError(errors.Error("db error"))},
+			models.Cat{}, errors.DB{Err: errors.Error("db error")}},
+
+		{"no row", cat1.ID, []interface{}{mock.ExpectQuery(query).WithArgs(cat1.ID).
+			WillReturnError(sql.ErrNoRows)},
+			models.Cat{}, errors.EntityNotFound{Entity: "cat", ID: cat1.ID}},
+	}
+
+	g := gofr.Gofr{DataStore: datastore.DataStore{ORM: db}}
+	ctx := gofr.NewContext(nil, nil, &g)
+	ctx.Context = context.Background()
+	store := New()
+
+	for i, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := store.GetByID(ctx, tc.id)
+			if !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.err, err)
+			}
+
+			if !reflect.DeepEqual(res, tc.res) {
+				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.res, res)
+			}
+		})
+	}
+}
+
+func TestCatStore_Update(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+
+	if err != nil {
+		t.Fatalf("database error :%s", err)
+	}
+
+	cat1 := models.Cat{
+		ID:   "1",
+		Name: "test_name",
+		Age:  1,
+	}
+
+	query := "UPDATE cat SET name=$1, age=$2 WHERE id=$3"
+	tests := []struct {
+		desc  string
+		input models.Cat
+		mock  []interface{}
+		res   models.Cat
+		err   error
+	}{
+		{"success", cat1,
+			[]interface{}{mock.ExpectExec(query).WithArgs(cat1.Name, cat1.Age, cat1.ID).
+				WillReturnResult(sqlmock.NewResult(1, 1))}, cat1, nil},
+
+		{"error", cat1, []interface{}{mock.ExpectExec(query).WithArgs(cat1.Name, cat1.Age, cat1.ID).
+			WillReturnError(errors.Error("db error"))}, models.Cat{}, errors.DB{Err: errors.Error("db error")}},
+
+		{"no row error", cat1, []interface{}{mock.ExpectExec(query).WithArgs(cat1.Name, cat1.Age, cat1.ID).
+			WillReturnError(sql.ErrNoRows)}, models.Cat{}, errors.EntityNotFound{Entity: "cat", ID: cat1.ID}},
+	}
+
+	g := gofr.Gofr{DataStore: datastore.DataStore{ORM: db}}
+	ctx := gofr.NewContext(nil, nil, &g)
+	ctx.Context = context.Background()
+	store := New()
+
+	for i, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := store.Update(ctx, tc.input)
+			if !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.err, err)
+			}
+
+			if !reflect.DeepEqual(res, tc.res) {
+				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.res, res)
+			}
+		})
+	}
+}
+
+func TestCatStore_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+
+	if err != nil {
+		t.Fatalf("database error :%s", err)
+	}
+
+	cat1 := models.Cat{
+		ID:   "1",
+		Name: "test_name",
+		Age:  1,
+	}
+
+	query := "DELETE FROM cat where id=$1"
+	tests := []struct {
+		desc  string
+		input string
+		mock  []interface{}
+		err   error
+	}{
+		{"success", cat1.ID,
+			[]interface{}{mock.ExpectExec(query).WithArgs(cat1.ID).
+				WillReturnResult(sqlmock.NewResult(1, 1))}, nil},
+
+		{"error", cat1.ID, []interface{}{mock.ExpectExec(query).WithArgs(cat1.ID).
+			WillReturnError(errors.Error("db error"))}, errors.DB{Err: errors.Error("db error")}},
+
+		{"no row error", cat1.ID, []interface{}{mock.ExpectExec(query).WithArgs(cat1.ID).
+			WillReturnError(sql.ErrNoRows)}, errors.EntityNotFound{Entity: "cat", ID: cat1.ID}},
+	}
+
+	g := gofr.Gofr{DataStore: datastore.DataStore{ORM: db}}
+	ctx := gofr.NewContext(nil, nil, &g)
+	ctx.Context = context.Background()
+	store := New()
+
+	for i, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			err := store.Delete(ctx, tc.input)
 			if !reflect.DeepEqual(err, tc.err) {
 				t.Errorf("Test :%v Expected : %v,Got : %v ", i+1, tc.err, err)
 			}
