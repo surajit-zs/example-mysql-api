@@ -77,7 +77,7 @@ func TestHandler_Get(t *testing.T) {
 
 	testRes := models.Response{
 		Cat:        []models.Cat{catModel},
-		Massage:    "Success",
+		Message:    "Success",
 		StatusCode: http.StatusOK,
 	}
 
@@ -127,7 +127,7 @@ func TestHandler_GetByID(t *testing.T) {
 
 	testRes := models.Response{
 		Cat:        catModel,
-		Massage:    "successful",
+		Message:    "successful",
 		StatusCode: http.StatusOK,
 	}
 
@@ -252,7 +252,7 @@ func TestHandler_Delete(t *testing.T) {
 
 	testRes := models.Response{
 		Cat:        nil,
-		Massage:    "successful",
+		Message:    "successful",
 		StatusCode: http.StatusOK,
 	}
 

@@ -24,7 +24,7 @@ func (h Handler) Get(ctx *gofr.Context) (interface{}, error) {
 
 	res := models.Response{
 		Cat:        resp,
-		Massage:    "Success",
+		Message:    "Success",
 		StatusCode: http.StatusOK,
 	}
 
@@ -49,7 +49,7 @@ func (h Handler) Create(ctx *gofr.Context) (interface{}, error) {
 
 	res := models.Response{
 		Cat:        resp,
-		Massage:    "created successful",
+		Message:    "created successful",
 		StatusCode: http.StatusCreated,
 	}
 
@@ -80,7 +80,7 @@ func (h Handler) GetByID(ctx *gofr.Context) (interface{}, error) {
 
 	resp := models.Response{
 		Cat:        res,
-		Massage:    "successful",
+		Message:    "successful",
 		StatusCode: http.StatusOK,
 	}
 
@@ -107,7 +107,7 @@ func (h Handler) Delete(ctx *gofr.Context) (interface{}, error) {
 
 	res := models.Response{
 		Cat:        nil,
-		Massage:    "successful",
+		Message:    "successful",
 		StatusCode: http.StatusOK,
 	}
 
@@ -142,7 +142,7 @@ func (h Handler) Update(ctx *gofr.Context) (interface{}, error) {
 
 	res := models.Response{
 		Cat:        resp,
-		Massage:    "update successful",
+		Message:    "update successful",
 		StatusCode: http.StatusCreated,
 	}
 
