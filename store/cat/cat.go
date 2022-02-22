@@ -65,7 +65,7 @@ func (c catStore) GetByID(ctx *gofr.Context, id string) (models.Cat, error) {
 }
 
 func (c catStore) Create(ctx *gofr.Context, cat models.Cat) (models.Cat, error) {
-	query := "Insert into cat values(?,?,?)"
+	query := "Insert into cat values($1,$2,$3)"
 	_, err := ctx.DB().ExecContext(ctx, query, cat.ID, cat.Name, cat.Age)
 
 	if err != nil {
