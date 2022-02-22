@@ -27,7 +27,7 @@ func TestCatStore_Create(t *testing.T) {
 		Age:  1,
 	}
 
-	query := "Insert into cat values(?,?,?)"
+	query := "Insert into cat values($1,$2,$3)"
 	tests := []struct {
 		desc  string
 		input models.Cat
