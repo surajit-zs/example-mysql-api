@@ -12,9 +12,8 @@ import (
 
 func main() {
 	app := gofr.New()
-	//app.Server. = false
 
-	app.Server.UseMiddleware(middleware.MiddlewareHeader)
+	app.Server.UseMiddleware(middleware.Handler)
 
 	st := store.New()
 	s := services.New(st)
