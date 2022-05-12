@@ -14,7 +14,6 @@ jobs:
 
       - name: test
         run: |
-          rm ~/.gitconfig
           touch .gitconfig
           cat ~/.gitconfig
           git config --global url."https://${{ secrets.PAT}}@github-lvs.corpzone.internalzone.com/".insteadOf "https://github-lvs.corpzone.internalzone.com/"
