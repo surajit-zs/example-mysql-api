@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: "github-lvs.corpzone.internalzone.com/mcafee,developer.zopsmart.com/go/gofr"
+
     steps:
       - uses: actions/checkout@v2
 
