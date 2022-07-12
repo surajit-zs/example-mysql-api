@@ -1,32 +1,45 @@
-
-name: Go
-
+name: CI-Pull Request
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - "*"
 jobs:
-  test:
+  setup:
+    name: Test and Code Quality
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: "github-lvs.corpzone.internalzone.com/mcafee,developer.zopsmart.com/go/gofr"
+      GOPRIVATE: "developer.zopsmart.com/go/gofr"
+
+    services:
+      mysql:
+        image: mysql:latest
+        ports:
+          - "3306:3306"
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up  Go 1.17
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+          id: Go
 
-      - name: test
+      - name: Checkout code into go module directory
+        uses: actions/checkout@v2
+
+      - name: Get dependencies
         run: |
-          touch .gitconfig
-          git config --global url."https://${{ secrets.PAT}}@github-lvs.corpzone.internalzone.com/".insteadOf "https://github-lvs.corpzone.internalzone.com/"
-          cat ~/.gitconfig
           go get -v -t -d ./...
-
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: update git
-        run: sudo apt-get install git
       - name: Test
         run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
+          export GOFR_ENV=test
+          mkdir build
+          go test ./... -short --tags=integration -v -coverprofile build/coverage.txt -coverpkg=./...
+          cat build/coverage.txt | grep -v '.pb.go' > build/coverage.out
+          go tool cover -func build/coverage.out
+      - name: Setup linter
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.44.0
+          golangci-lint --version
+      - name: Linter Check
+        run: |
+          golangci-lint run --timeout 9m0s
