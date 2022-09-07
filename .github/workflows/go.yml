@@ -1,51 +1,39 @@
-
-name: Go
-
+name: CI-Pull Request
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - "*"
 jobs:
-  test:
+  setup:
+    name: Test and Code Quality
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: "developer.zopsmart.com/go/gofr"
 
     steps:
-      - name: Set up  Go 1.x
+      - name: Set up  Go 1.17
         uses: actions/setup-go@v2
         with:
           go-version: 1.17
-        id: Go
+          id: Go
 
       - name: Checkout code into go module directory
         uses: actions/checkout@v2
 
-
       - name: Get dependencies
         run: |
-          git config --global url."https://${{ secrets.PAT}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          git config --global http.sslVerify false
           go get -v -t -d ./...
-
       - name: Test
         run: |
+          export GOFR_ENV=test
           mkdir build
           go test ./... -short --tags=integration -v -coverprofile build/coverage.txt -coverpkg=./...
           cat build/coverage.txt | grep -v '.pb.go' > build/coverage.out
           go tool cover -func build/coverage.out
-
-  code_quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    container: "golangci/golangci-lint:v1.44.0"
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-      - name: Get dependencies
+      - name: Setup linter
         run: |
-          git config --global url."https://${{ secrets.PAT}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          git config --global http.sslVerify false
-          go get -v -t -d ./...
-      - name: GolangCI-Lint
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.44.0
+          golangci-lint --version
+      - name: Linter Check
         run: |
           golangci-lint run --timeout 9m0s
