@@ -13,6 +13,7 @@ import (
 	"mysql-api/store"
 )
 
+//nolint:dupl //they are defined separately for different test
 func TestServices_Create(t *testing.T) {
 	app := gofr.New()
 	ctrl := gomock.NewController(t)
@@ -195,6 +196,7 @@ func TestServices_Delete(t *testing.T) {
 	}
 }
 
+//nolint:dupl //they are defined separately for different test
 func TestServices_Update(t *testing.T) {
 	app := gofr.New()
 	ctrl := gomock.NewController(t)
