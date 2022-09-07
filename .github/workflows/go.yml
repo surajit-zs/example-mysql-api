@@ -9,24 +9,43 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GOPRIVATE: "github-lvs.corpzone.internalzone.com/mcafee,developer.zopsmart.com/go/gofr"
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up  Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+        id: Go
 
-      - name: test
+      - name: Checkout code into go module directory
+        uses: actions/checkout@v2
+
+
+      - name: Get dependencies
         run: |
-          touch .gitconfig
-          git config --global url."https://${{ secrets.PAT}}@github-lvs.corpzone.internalzone.com/".insteadOf "https://github-lvs.corpzone.internalzone.com/"
-          cat ~/.gitconfig
+          git config --global url."https://${{ secrets.PAT}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          git config --global http.sslVerify false
           go get -v -t -d ./...
 
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: update git
-        run: sudo apt-get install git
       - name: Test
         run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
+          mkdir build
+          go test ./... -short --tags=integration -v -coverprofile build/coverage.txt -coverpkg=./...
+          cat build/coverage.txt | grep -v '.pb.go' > build/coverage.out
+          go tool cover -func build/coverage.out
+
+  code_quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    container: "golangci/golangci-lint:v1.44.0"
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: Get dependencies
+        run: |
+          git config --global url."https://${{ secrets.PAT}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          git config --global http.sslVerify false
+          go get -v -t -d ./...
+      - name: GolangCI-Lint
+        run: |
+          golangci-lint run --timeout 9m0s

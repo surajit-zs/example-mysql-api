@@ -5,14 +5,13 @@ go 1.17
 require github.com/golang/mock v1.6.0
 
 require (
-	developer.zopsmart.com/go/gofr v0.9.0
+	developer.zopsmart.com/go/gofr v0.2.0
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 )
 
 require (
 	cloud.google.com/go/compute v1.2.0 // indirect
 	cloud.google.com/go/trace v1.0.0 // indirect
-	github-lvs.corpzone.internalzone.com/mcafee/cnsr-gofr-csp-auth v0.1.3 // indirect
 	github.com/Azure/azure-amqp-common-go/v3 v3.2.3 // indirect
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.17 // indirect
 	github.com/Azure/azure-sdk-for-go v61.4.0+incompatible // indirect
